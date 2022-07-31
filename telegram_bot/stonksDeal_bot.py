@@ -57,9 +57,7 @@ def recent(update: Update, context: CallbackContext):
         return
 
     selected_search = context.user_data["selection"]
-    with open(
-        "./data/carousell_" + selected_search.replace(" ", "_") + ".csv", "r"
-    ) as f:
+    with open("./data/" + selected_search.replace(" ", "_") + ".csv", "r") as f:
         df = pd.read_csv(f)
         context.bot.send_message(
             chat_id=update.effective_chat.id,
@@ -90,9 +88,7 @@ def cheapest(update: Update, context: CallbackContext):
         return
 
     selected_search = context.user_data["selection"]
-    with open(
-        "./data/carousell_" + selected_search.replace(" ", "_") + ".csv", "r"
-    ) as f:
+    with open("./data/" + selected_search.replace(" ", "_") + ".csv", "r") as f:
         df = pd.read_csv(f)
         context.bot.send_message(
             chat_id=update.effective_chat.id,
@@ -125,9 +121,7 @@ def range(update: Update, context: CallbackContext):
     a = int(context.args[0])
     b = int(context.args[1])
     selected_search = context.user_data["selection"]
-    with open(
-        "./data/carousell_" + selected_search.replace(" ", "_") + ".csv", "r"
-    ) as f:
+    with open("./data/" + selected_search.replace(" ", "_") + ".csv", "r") as f:
         df = pd.read_csv(f)
         context.bot.send_message(
             chat_id=update.effective_chat.id,
@@ -159,6 +153,12 @@ def add(update: Update, context: CallbackContext):
 
 # switch from one monitored search to another
 def switch(update: Update, context: CallbackContext):
+    if len(monitored_searches) == 0:
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="No monitored searches found. Use /add to add one.",
+        )
+        return
     keyboard = [[InlineKeyboardButton(x, callback_data=x)] for x in monitored_searches]
     update.message.reply_text(
         "Please select one of the following searches: ",

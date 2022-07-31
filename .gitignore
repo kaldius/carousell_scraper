@@ -2,3 +2,4 @@
 .DS_Store
 data
 config.txt
+__pycache__

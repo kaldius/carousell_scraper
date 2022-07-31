@@ -87,7 +87,7 @@ def process_and_save(item_list: dict, query: str):
 
     # sys.path[0] gets current working directory
     df.to_csv(
-        "./data/carousell_" + query.replace(" ", "_") + ".csv",
+        "./data/" + query.replace(" ", "_") + ".csv",
         index=False,
     )
 
