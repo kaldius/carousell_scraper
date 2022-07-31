@@ -1,3 +1,4 @@
+from tkinter import W
 from telegram.ext import (
     Updater,
     CallbackContext,
@@ -14,6 +15,7 @@ import os
 from scraper import scraper
 
 DEFAULT_COLS = ["title", "price", "age"]
+CAROUSELL_URL = "https://www.carousell.sg"
 
 if os.path.exists("./data/monitored_searches.txt"):
     with open("./data/monitored_searches.txt", "r") as index_file:
@@ -33,6 +35,32 @@ logger = logging.getLogger(__name__)
 def start(update: Update, context: CallbackContext):
     context.bot.send_message(
         chat_id=update.effective_chat.id, text="I'm a bot, please talk to me!"
+    )
+
+
+# formatting output to look nice in telegram
+def format_message(series: pd.Series):
+    """
+    Format a pandas Series as a string.
+    """
+    return (
+        "["
+        + series["title"]
+        + "]("
+        + CAROUSELL_URL
+        + series["listing_url"]
+        + ")"
+        + ": S$"
+        + series["price"].astype(str)
+        + "\n Listed "
+        + series["age"]
+        + " ago by "
+        + "["
+        + series["seller_url"][3:-1]
+        + "]("
+        + CAROUSELL_URL
+        + series["seller_url"]
+        + ")"
     )
 
 
@@ -59,12 +87,12 @@ def recent(update: Update, context: CallbackContext):
     selected_search = context.user_data["selection"]
     with open("./data/" + selected_search.replace(" ", "_") + ".csv", "r") as f:
         df = pd.read_csv(f)
-        context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text=df.head(num).to_string(
-                columns=DEFAULT_COLS, max_colwidth=10, index=False
-            ),
-        )
+        for i in range(num):
+            context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text=format_message(df.iloc[i]),
+                parse_mode="Markdown",
+            )
 
 
 # show the 'num' cheapest listings in latest scrape
@@ -89,17 +117,17 @@ def cheapest(update: Update, context: CallbackContext):
 
     selected_search = context.user_data["selection"]
     with open("./data/" + selected_search.replace(" ", "_") + ".csv", "r") as f:
-        df = pd.read_csv(f)
-        context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text=df.nsmallest(num, "price").to_string(
-                columns=DEFAULT_COLS, max_colwidth=10, index=False
-            ),
-        )
+        df = pd.read_csv(f).nsmallest(num, "price")
+        for i in range(num):
+            context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text=format_message(df.iloc[i]),
+                parse_mode="Markdown",
+            )
 
 
 # show all listings within range a, b
-def range(update: Update, context: CallbackContext):
+def price_range(update: Update, context: CallbackContext):
     if (
         len(context.args) != 2
         or not context.args[0][:].isdigit()
@@ -123,12 +151,13 @@ def range(update: Update, context: CallbackContext):
     selected_search = context.user_data["selection"]
     with open("./data/" + selected_search.replace(" ", "_") + ".csv", "r") as f:
         df = pd.read_csv(f)
-        context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text=df[(df["price"] >= a) & (df["price"] <= b)].to_string(
-                columns=DEFAULT_COLS, max_colwidth=10, index=False
-            ),
-        )
+        df = df[(df["price"] >= a) & (df["price"] <= b)]
+        for i in range(len(df)):
+            context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text=format_message(df.iloc[i]),
+                parse_mode="Markdown",
+            )
 
 
 # add a new search to the list of monitored searches
@@ -196,7 +225,7 @@ def main():
     start_handler = CommandHandler("start", start)
     recent_handler = CommandHandler("recent", recent)
     cheapest_handler = CommandHandler("cheapest", cheapest)
-    range_handler = CommandHandler("range", range)
+    price_range_handler = CommandHandler("range", price_range)
     add_handler = CommandHandler("add", add)
     switch_handler = CommandHandler("switch", switch)
     switch_button_hanlder = CallbackQueryHandler(switch_button)
@@ -206,7 +235,7 @@ def main():
         start_handler,
         recent_handler,
         cheapest_handler,
-        range_handler,
+        price_range_handler,
         add_handler,
         switch_handler,
         switch_button_hanlder,

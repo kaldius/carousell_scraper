@@ -30,15 +30,15 @@ def get_items(query: str):
 
             # Retrieve data from website using HTML tags
             # TODO: possible improvement: add filters here to stop scraping item once it fails
-            listing_link_tag = item.find(
+            listing_url_tag = item.find(
                 href=re.compile("/p/")
             )  # will be using relative positions from this tag to find other data
-            item_attributes["listing_link"] = listing_link_tag.get("href")
-            item_attributes["title"] = listing_link_tag.next_element.next_sibling.text
+            item_attributes["listing_url"] = listing_url_tag.get("href")
+            item_attributes["title"] = listing_url_tag.next_element.next_sibling.text
             item_attributes[
                 "price"
-            ] = listing_link_tag.next_element.next_sibling.next_sibling.find("p").text
-            item_attributes["seller_link"] = item.find(href=re.compile("/u/")).get(
+            ] = listing_url_tag.next_element.next_sibling.next_sibling.find("p").text
+            item_attributes["seller_url"] = item.find(href=re.compile("/u/")).get(
                 "href"
             )
             item_attributes["age"] = item.find(
@@ -69,7 +69,7 @@ def process_and_save(item_list: dict, query: str):
     df = pd.DataFrame(item_list)
 
     # define col order
-    cols = ["title", "price", "age", "seller_link", "listing_link"]
+    cols = ["title", "price", "age", "seller_url", "listing_url"]
     df = df[cols]
 
     # clean up columns

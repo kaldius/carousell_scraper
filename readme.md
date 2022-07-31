@@ -71,6 +71,10 @@ Available commands:
 
 Todo(bot side):
 - [ ] Beautify format of output (currently so ugly its unusable) [consider cards with images? and maybe show only a few(3) and allow user to click to show more]
+    - [x] make it not ugly
+    - [ ] Images?
+    - [ ] how to not spam user with all 5
+    - [ ] click to show more listings?
 - [x] Make `/add` command to scrape for new search term
     - [x] global variable to store current query to use the other functions
     - [x] make `/switch` command to switch to other tracked items
