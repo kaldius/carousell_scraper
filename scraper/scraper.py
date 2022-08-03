@@ -1,8 +1,10 @@
 from bs4 import BeautifulSoup
+from numpy import save
 import requests
 import re
 import pandas as pd
-import sys
+import os
+from config.definitions import ROOT_DIR, CAROUSELL_URL
 
 # creates BeautifulSoup object from html
 def request_page(url):
@@ -13,17 +15,16 @@ def request_page(url):
 def get_items(query: str):
     page_count = 1
     item_list = []
-    url = "https://www.carousell.sg"
     extension = "/search/" + query.replace(" ", "%20")
 
     while extension != None:
         item_count = 0
-        soup = request_page(url + extension)
+        soup = request_page(CAROUSELL_URL + extension)
         all_items = soup.main.find_all(
             attrs={"data-testid": re.compile("listing-card-\d{10}")}
         )
         print("Number of items: ", len(all_items), "Page: ", page_count)
-        print("URL: ", url + extension)
+        print("URL: ", CAROUSELL_URL + extension)
 
         for item in all_items:
             item_attributes = {}
@@ -85,9 +86,13 @@ def process_and_save(item_list: dict, query: str):
     # sort by age
     df.sort_values(by="age", key=age_series_str_to_hours, inplace=True)
 
-    # sys.path[0] gets current working directory
+    save_path = os.path.join(ROOT_DIR, "data")
+
+    if not os.path.exists(save_path):
+        os.mkdir(save_path)
+
     df.to_csv(
-        "./data/" + query.replace(" ", "_") + ".csv",
+        save_path + "/" + query.replace(" ", "_") + ".csv",
         index=False,
     )
 

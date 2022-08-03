@@ -1,5 +1,5 @@
 .vscode
 .DS_Store
 data
-config.txt
 __pycache__
+config/token.txt

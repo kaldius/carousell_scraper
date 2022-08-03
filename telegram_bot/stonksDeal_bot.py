@@ -1,4 +1,3 @@
-from tkinter import W
 from telegram.ext import (
     Updater,
     CallbackContext,
@@ -11,14 +10,14 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 import logging
 import pandas as pd
 import os
+from config.definitions import ROOT_DIR, CAROUSELL_URL, TOKEN_DIR
 
 from scraper import scraper
 
-DEFAULT_COLS = ["title", "price", "age"]
-CAROUSELL_URL = "https://www.carousell.sg"
+load_path = os.path.join(ROOT_DIR, "data", "monitored_searches.txt")
 
-if os.path.exists("./data/monitored_searches.txt"):
-    with open("./data/monitored_searches.txt", "r") as index_file:
+if os.path.exists(load_path):
+    with open(load_path, "r") as index_file:
         monitored_searches = index_file.readlines()
         monitored_searches = [x.strip() for x in monitored_searches]
         print("\nLoaded monitered searches: " + str(monitored_searches) + "\n")
@@ -85,7 +84,9 @@ def recent(update: Update, context: CallbackContext):
         return
 
     selected_search = context.user_data["selection"]
-    with open("./data/" + selected_search.replace(" ", "_") + ".csv", "r") as f:
+    with open(
+        ROOT_DIR + "/data/" + selected_search.replace(" ", "_") + ".csv", "r"
+    ) as f:
         df = pd.read_csv(f)
         for i in range(num):
             context.bot.send_message(
@@ -116,7 +117,9 @@ def cheapest(update: Update, context: CallbackContext):
         return
 
     selected_search = context.user_data["selection"]
-    with open("./data/" + selected_search.replace(" ", "_") + ".csv", "r") as f:
+    with open(
+        ROOT_DIR + "/data/" + selected_search.replace(" ", "_") + ".csv", "r"
+    ) as f:
         df = pd.read_csv(f).nsmallest(num, "price")
         for i in range(num):
             context.bot.send_message(
@@ -149,7 +152,9 @@ def price_range(update: Update, context: CallbackContext):
     a = int(context.args[0])
     b = int(context.args[1])
     selected_search = context.user_data["selection"]
-    with open("./data/" + selected_search.replace(" ", "_") + ".csv", "r") as f:
+    with open(
+        ROOT_DIR + "/data/" + selected_search.replace(" ", "_") + ".csv", "r"
+    ) as f:
         df = pd.read_csv(f)
         df = df[(df["price"] >= a) & (df["price"] <= b)]
         for i in range(len(df)):
@@ -217,7 +222,7 @@ def unknown(update: Update, context: CallbackContext):
 
 
 def main():
-    with open("./config.txt", "r") as f:
+    with open(TOKEN_DIR, "r") as f:
         TOKEN = f.readline().strip()
     updater = Updater(token=TOKEN)
     dispatcher = updater.dispatcher
