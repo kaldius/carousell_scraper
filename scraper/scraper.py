@@ -118,6 +118,6 @@ def age_series_str_to_hours(age_series):
     return output
 
 
-def new_search(query: str):
+def search(query: str):
     item_list = get_items(query)
     process_and_save(item_list, query)

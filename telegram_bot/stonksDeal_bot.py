@@ -11,19 +11,20 @@ import logging
 import pandas as pd
 import os
 from config.definitions import ROOT_DIR, CAROUSELL_URL, TOKEN_DIR
+import csv
 
 from scraper import scraper
 
-load_path = os.path.join(ROOT_DIR, "data", "monitored_searches.txt")
+load_path = os.path.join(ROOT_DIR, "data", "monitored_searches.csv")
 
 if os.path.exists(load_path):
-    with open(load_path, "r") as index_file:
-        monitored_searches = index_file.readlines()
-        monitored_searches = [x.strip() for x in monitored_searches]
-        print("\nLoaded monitered searches: " + str(monitored_searches) + "\n")
+    with open(load_path, "r") as f:
+        reader = csv.reader(f)
+        monitored_searches = {int(row[0]): row[1:] for row in reader}
+        print(monitored_searches)
 else:
-    print("\nNo monitored searches file found, creating new one\n")
-    monitored_searches = []
+    print("No monitored searches file found, creating new one.")
+    monitored_searches = {}
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
@@ -175,10 +176,24 @@ def add(update: Update, context: CallbackContext):
         return
     else:
         new_search = " ".join(context.args)
-        monitored_searches.append(new_search)
-        scraper.new_search(new_search)
+
+        user_id = update.effective_user.id
+
+        if user_id in monitored_searches:
+            monitored_searches[user_id].append(new_search)
+        else:
+            monitored_searches[user_id] = [new_search]
+        scraper.search(new_search)
+
         context.user_data["selection"] = new_search
-        print("\nAdded new search: " + new_search + "\n")
+
+        print(
+            "\nAdded new search '"
+            + new_search
+            + "' to user_id: "
+            + str(update.effective_chat.id)
+        )
+
         context.bot.send_message(
             chat_id=update.effective_chat.id,
             text="Added search term: " + new_search,
@@ -187,13 +202,16 @@ def add(update: Update, context: CallbackContext):
 
 # switch from one monitored search to another
 def switch(update: Update, context: CallbackContext):
-    if len(monitored_searches) == 0:
+    user_id = update.effective_chat.id
+    if user_id not in monitored_searches:
         context.bot.send_message(
             chat_id=update.effective_chat.id,
             text="No monitored searches found. Use /add to add one.",
         )
         return
-    keyboard = [[InlineKeyboardButton(x, callback_data=x)] for x in monitored_searches]
+    keyboard = [
+        [InlineKeyboardButton(x, callback_data=x)] for x in monitored_searches[user_id]
+    ]
     update.message.reply_text(
         "Please select one of the following searches: ",
         reply_markup=InlineKeyboardMarkup(keyboard),
@@ -252,10 +270,14 @@ def main():
     updater.start_polling()
     updater.idle()
 
-    with open("./data/monitored_searches.txt", "w") as index_file:
-        for search in monitored_searches:
-            index_file.write(search + "\n")
-        print("\nSaved monitored searches: " + str(monitored_searches) + "\n")
+    if not os.path.exists(os.path.join(ROOT_DIR, "data")):
+        os.mkdir(os.path.join(ROOT_DIR, "data"))
+
+    with open("./data/monitored_searches.csv", "w") as f:
+        writer = csv.writer(f)
+        keys = monitored_searches.keys()
+        for key in keys:
+            writer.writerow([key] + monitored_searches[key])
 
 
 if __name__ == "__main__":

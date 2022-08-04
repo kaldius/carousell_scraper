@@ -1,6 +1,20 @@
 # Carousell Scraper
 A web scraper for [Carousell](https://www.carousell.sg) which uses [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/) for scraping and [python-telegram-bot](https://github.com/python-telegram-bot/python-telegram-bot) for front-end user interaction.
 
+## Quick Start
+1. Create a `token.txt` file in the `config` directory of this package and paste your token in the file **without** any whitespaces/newlines.
+2. Install python dependencies.
+```
+# optional
+python -m venv my_venv
+source my_venv/bin/activate
+
+pip install -r requirements.txt
+```
+3. Run `main.py`
+```
+python main.py
+```
 
 ## `main.py`
 ---
