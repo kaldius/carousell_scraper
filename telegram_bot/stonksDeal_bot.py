@@ -33,8 +33,15 @@ logger = logging.getLogger(__name__)
 
 
 def start(update: Update, context: CallbackContext):
+    welcome_text = "Welcome to _*StonksDealFinder\!*_\
+\nThis bot will help you find stonks deals on Carousell\.\n\n\
+To get started, add a search term using the /add command\.\n\n\
+You can then use the /recent and /cheapest commands to find\
+the most *recent* or *cheapest* listings\.\n e\.g\. \`recent 5\` displays \
+the 5 most recent listings related to your currently selected \
+search term\.\n\nTo switch between your searches, use the /switch command\.\n"
     context.bot.send_message(
-        chat_id=update.effective_chat.id, text="I'm a bot, please talk to me!"
+        chat_id=update.effective_chat.id, text=welcome_text, parse_mode="MarkdownV2"
     )
 
 

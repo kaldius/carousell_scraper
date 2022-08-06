@@ -12,7 +12,47 @@ def request_page(url):
     return BeautifulSoup(html_text, "lxml")
 
 
-def get_items(query: str):
+def is_bumped(item):
+    return (
+        item.find(
+            attrs={"data-testid": "listing-card-text-seller-name"}
+        ).next_sibling.find("svg")
+        != None
+    )
+
+
+def is_slashed(item):
+    return (
+        item.find(
+            attrs={"data-testid": "listing-card-text-seller-name"}
+        ).next_sibling.find("svg")
+        != None
+    )
+
+
+def get_age(item):
+    return item.find(
+        attrs={"data-testid": "listing-card-text-seller-name"}
+    ).next_sibling.text
+
+
+# these 3 attributes are grouped together because we use relative positions from one tag to get all 3
+def get_url_title_price(item):
+    listing_url_tag = item.find(
+        href=re.compile("/p/")
+    )  # will be using relative positions from this tag to find other data
+    return (
+        listing_url_tag.get("href"),
+        listing_url_tag.next_element.next_sibling.text,
+        listing_url_tag.next_element.next_sibling.next_sibling.find("p").text,
+    )
+
+
+def get_seller_url(item):
+    return item.find(href=re.compile("/u/")).get("href")
+
+
+def get_items(query: str, skip_bumps=True):
     page_count = 1
     item_list = []
     extension = "/search/" + query.replace(" ", "%20")
@@ -30,22 +70,19 @@ def get_items(query: str):
             item_attributes = {}
 
             # Retrieve data from website using HTML tags
-            # TODO: possible improvement: add filters here to stop scraping item once it fails
-            # * if post is bumped (there is an svg before the age p tag), skip, unless price shows a cut (span after price p tag)
-            listing_url_tag = item.find(
-                href=re.compile("/p/")
-            )  # will be using relative positions from this tag to find other data
-            item_attributes["listing_url"] = listing_url_tag.get("href")
-            item_attributes["title"] = listing_url_tag.next_element.next_sibling.text
-            item_attributes[
-                "price"
-            ] = listing_url_tag.next_element.next_sibling.next_sibling.find("p").text
-            item_attributes["seller_url"] = item.find(href=re.compile("/u/")).get(
-                "href"
-            )
-            item_attributes["age"] = item.find(
-                attrs={"data-testid": "listing-card-text-seller-name"}
-            ).next_sibling.text
+            # POSSIBLE IMPROVEMENT: add filters here to stop scraping item once it fails
+
+            if skip_bumps and is_bumped(item) and not is_slashed(item):
+                # skip this item
+                continue
+
+            item_attributes["age"] = get_age(item)
+            (
+                item_attributes["listing_url"],
+                item_attributes["title"],
+                item_attributes["price"],
+            ) = get_url_title_price(item)
+            item_attributes["seller_url"] = get_seller_url(item)
 
             # append the item to the list
             item_list.append(item_attributes)
