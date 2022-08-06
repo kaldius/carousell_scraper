@@ -31,6 +31,7 @@ def get_items(query: str):
 
             # Retrieve data from website using HTML tags
             # TODO: possible improvement: add filters here to stop scraping item once it fails
+            # * if post is bumped (there is an svg before the age p tag), skip, unless price shows a cut (span after price p tag)
             listing_url_tag = item.find(
                 href=re.compile("/p/")
             )  # will be using relative positions from this tag to find other data

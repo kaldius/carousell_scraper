@@ -199,6 +199,8 @@ def add(update: Update, context: CallbackContext):
             text="Added search term: " + new_search,
         )
 
+        save_monitored_searches()
+
 
 # switch from one monitored search to another
 def switch(update: Update, context: CallbackContext):
@@ -239,6 +241,18 @@ def unknown(update: Update, context: CallbackContext):
     )
 
 
+# save monitored_searches
+def save_monitored_searches():
+    if not os.path.exists(os.path.join(ROOT_DIR, "data")):
+        os.mkdir(os.path.join(ROOT_DIR, "data"))
+
+    with open("./data/monitored_searches.csv", "w") as f:
+        writer = csv.writer(f)
+        keys = monitored_searches.keys()
+        for key in keys:
+            writer.writerow([key] + monitored_searches[key])
+
+
 def main():
     with open(TOKEN_DIR, "r") as f:
         TOKEN = f.readline().strip()
@@ -269,15 +283,6 @@ def main():
 
     updater.start_polling()
     updater.idle()
-
-    if not os.path.exists(os.path.join(ROOT_DIR, "data")):
-        os.mkdir(os.path.join(ROOT_DIR, "data"))
-
-    with open("./data/monitored_searches.csv", "w") as f:
-        writer = csv.writer(f)
-        keys = monitored_searches.keys()
-        for key in keys:
-            writer.writerow([key] + monitored_searches[key])
 
 
 if __name__ == "__main__":

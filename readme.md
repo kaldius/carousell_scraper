@@ -11,10 +11,19 @@ source my_venv/bin/activate
 
 pip install -r requirements.txt
 ```
-3. Run `main.py`
+3. Run `main.py` to start the telegram bot.
 ```
 python main.py
 ```
+4. Create script to run regularly with crontab. It should include:
+```
+#!/usr/bin/env bash
+
+source <path_to_venv>/bin/activate
+python <path_to_this_repo>/scrape_once.py
+```
+5. Create a crontab task to automate the running of your script. Use `crontab -e` to access the crontab file and add a new line to run your script as often as you like!
+
 
 ## `main.py`
 ---
@@ -81,6 +90,10 @@ Available commands:
         2. Pass the keyboard list to `InlineKeyboardMarkup`
         3. Set `reply_markup` parameter for message reply to the above keyboard markup
         4. Create a callback for button presses and use it to create a `CallbackQueryHandler`
+3. Crontab
+    * Use `crontab -e` to edit your user's crontab or `sudo vim /etc/crontab` to edit.
+    * Format is relatively simple, just read the crontab file.
+    * **Tip**: use `0,15,30,45` in the minutes field to run the command at the respective mins, OR you can use `/15` to run every 15 mins, though not necessarily at the 0th, 15th, 30th and 45th minutes.
 
 
 Todo(bot side):
@@ -95,9 +108,11 @@ Todo(bot side):
 - [ ] Check for diffs at each new scrape and automatically push them to user
     - [ ] add command to subscribe/unsubscribe to this
 - [ ] notifications when new listings are added
+- [ ] add error callback
 
 Todo(scraper side):
-- [ ] maintain list of tracked search terms
+- [x] maintain list of tracked search terms
 - [ ] scheduled scraping
 - [ ] diffs between scrapes
+    - [ ] how to see diffs? since the age of the item changes with each scrape. Look for items with age < scraping interval?
 - [ ] store user bookmarks or already viewed listings

@@ -4,3 +4,4 @@ data
 __pycache__
 config/token.txt
 playground
+crontab_scrape.sh
