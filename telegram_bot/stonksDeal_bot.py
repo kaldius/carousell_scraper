@@ -15,16 +15,20 @@ import csv
 
 from scraper import scraper
 
-load_path = os.path.join(ROOT_DIR, "data", "monitored_searches.csv")
+monitored_searches = {}
 
-if os.path.exists(load_path):
-    with open(load_path, "r") as f:
-        reader = csv.reader(f)
-        monitored_searches = {int(row[0]): row[1:] for row in reader}
-        print(monitored_searches)
-else:
-    print("No monitored searches file found, creating new one.")
-    monitored_searches = {}
+
+def load_monitored_searches(monitored_searches):
+    load_path = os.path.join(ROOT_DIR, "data", "monitored_searches.csv")
+
+    if os.path.exists(load_path):
+        with open(load_path, "r") as f:
+            reader = csv.reader(f)
+            monitored_searches = {int(row[0]): row[1:] for row in reader}
+            print(monitored_searches)
+    else:
+        print("No monitored searches file found, creating new one.")
+
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
@@ -186,11 +190,19 @@ def add(update: Update, context: CallbackContext):
 
         user_id = update.effective_user.id
 
+        # search and return error message if no results found
+        if not scraper.search(new_search):
+            context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="Sorry, I couldn't find any listings for " + new_search,
+            )
+            return
+
+        # valid results found, add to list of monitored searches
         if user_id in monitored_searches:
             monitored_searches[user_id].append(new_search)
         else:
             monitored_searches[user_id] = [new_search]
-        scraper.search(new_search)
 
         context.user_data["selection"] = new_search
 
@@ -253,7 +265,9 @@ def save_monitored_searches():
     if not os.path.exists(os.path.join(ROOT_DIR, "data")):
         os.mkdir(os.path.join(ROOT_DIR, "data"))
 
-    with open("./data/monitored_searches.csv", "w") as f:
+    save_path = os.path.join(ROOT_DIR, "data", "monitored_searches.csv")
+
+    with open(save_path, "w") as f:
         writer = csv.writer(f)
         keys = monitored_searches.keys()
         for key in keys:

@@ -63,6 +63,8 @@ def get_items(query: str, skip_bumps=True):
         all_items = soup.main.find_all(
             attrs={"data-testid": re.compile("listing-card-\d{10}")}
         )
+        if len(all_items) == 0:
+            return []
         print("Number of items: ", len(all_items), "Page: ", page_count)
         print("URL: ", CAROUSELL_URL + extension)
 
@@ -158,4 +160,7 @@ def age_series_str_to_hours(age_series):
 
 def search(query: str):
     item_list = get_items(query)
+    if len(item_list) == 0:
+        return False
     process_and_save(item_list, query)
+    return True
