@@ -11,6 +11,7 @@ import logging
 import pandas as pd
 import os
 from config.definitions import ROOT_DIR, CAROUSELL_URL, TOKEN_DIR
+from multiprocessing.connection import Listener
 import csv
 
 from scraper import scraper
@@ -18,16 +19,15 @@ from scraper import scraper
 monitored_searches = {}
 
 
-def load_monitored_searches(monitored_searches):
-    load_path = os.path.join(ROOT_DIR, "data", "monitored_searches.csv")
+load_path = os.path.join(ROOT_DIR, "data", "monitored_searches.csv")
 
-    if os.path.exists(load_path):
-        with open(load_path, "r") as f:
-            reader = csv.reader(f)
-            monitored_searches = {int(row[0]): row[1:] for row in reader}
-            print(monitored_searches)
-    else:
-        print("No monitored searches file found, creating new one.")
+if os.path.exists(load_path):
+    with open(load_path, "r") as f:
+        reader = csv.reader(f)
+        monitored_searches = {int(row[0]): row[1:] for row in reader}
+        print(monitored_searches)
+else:
+    print("No monitored searches file found, creating new one.")
 
 
 logging.basicConfig(
@@ -274,6 +274,51 @@ def save_monitored_searches():
             writer.writerow([key] + monitored_searches[key])
 
 
+# checks if age is recent (< 10 min)
+def is_recent(row):
+    age = row["age"].split()
+    return "second" in age[1] or "minute" in age[1] and int(age[0]) < 10
+
+
+# update all users on new listings
+def update_all_users(updater):
+    for user_id in monitored_searches:
+        for search in monitored_searches[user_id]:
+            with open(
+                ROOT_DIR + "/data/" + search.replace(" ", "_") + ".csv", "r"
+            ) as f:
+                df = pd.read_csv(f)
+                m = df.apply(is_recent, axis=1)
+                recent_listings = df[m]
+                for i in range(len(recent_listings)):
+                    updater.bot.send_message(
+                        chat_id=user_id,
+                        text=format_message(recent_listings.iloc[i]),
+                        parse_mode="Markdown",
+                    )
+
+
+# run when update_user script is run by crontab
+def user_updater(updater):
+    listener = Listener(("localhost", 6000), authkey=b"password")
+    running = True
+    while running:
+        try:
+            conn = listener.accept()
+            message = conn.recv()
+            print(message)
+            if message == "stop":
+                running = False
+                break
+            else:
+                update_all_users(updater)
+            conn.close()
+        except Exception as e:
+            print(e)
+            pass
+    listener.close()
+
+
 def main():
     with open(TOKEN_DIR, "r") as f:
         TOKEN = f.readline().strip()
@@ -303,6 +348,7 @@ def main():
         dispatcher.add_handler(handler)
 
     updater.start_polling()
+    user_updater(updater)
     updater.idle()
 
 

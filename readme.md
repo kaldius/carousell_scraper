@@ -61,7 +61,10 @@ Processes scraped data and saves it in `/data/`.
 
 ## `stonksDeal_bot.py`
 ---
-Available commands:
+Front end for the scraper.
+**Note**: for now, all added searches are subscribed to, meaning any new listings will trigger a push notification.
+
+**Available commands**:
 * `/start`: Just replies with "I'm a bot, please talk to me!" for now.
 * `/recent`: Displays the most recently posted listing in the latest scrape. Optional: specify number of listings to show
 > e.g. "/recent 5" shows the 5 most recently posted listings
@@ -97,6 +100,8 @@ Available commands:
     * Use `crontab -e` to edit your user's crontab or `sudo vim /etc/crontab` to edit.
     * Format is relatively simple, just read the crontab file.
     * **Tip**: use `0,15,30,45` in the minutes field to run the command at the respective mins, OR you can use `/15` to run every 15 mins, though not necessarily at the 0th, 15th, 30th and 45th minutes.
+4. multiprocessing.connection
+    * This library implements a method of communication between a Client and a Listener. 
 
 
 Todo(bot side):
@@ -109,13 +114,16 @@ Todo(bot side):
     - [x] global variable to store current query to use the other functions
     - [x] make `/switch` command to switch to other tracked items
 - [ ] Check for diffs at each new scrape and automatically push them to user
-    - [ ] add command to subscribe/unsubscribe to this
-- [ ] notifications when new listings are added
+    - [ ] add command to subscribe/unsubscribe to this per search
+    - [x] notifications when new listings are added
+    - [ ] set criteria (like < $10) for notifications
 - [ ] add error callback
+- [ ] add ability to delete searches
+- [ ] ctl+c raises an exception, still don't know how to prevent it. At least it doesn't affect use for now.
 
 Todo(scraper side):
 - [x] maintain list of tracked search terms
-- [ ] scheduled scraping
-- [ ] diffs between scrapes
-    - [ ] how to see diffs? since the age of the item changes with each scrape. Look for items with age < scraping interval?
+- [x] scheduled scraping
+- [x] diffs between scrapes
+    - [x] how to see diffs? since the age of the item changes with each scrape. Look for items with age < scraping interval?
 - [ ] store user bookmarks or already viewed listings

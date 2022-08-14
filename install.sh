@@ -12,7 +12,7 @@ pip install -r requirements.txt
 
 # create cron scripts
 echo "Creating cron scripts..."
-echo "source $PWD/scraper_venv/bin/activate && python $PWD/scrape_once.py" > cron_scrape.sh
+echo "source $PWD/scraper_venv/bin/activate && python $PWD/scrape_once.py && sleep 5s && python $PWD/update_user.py" > cron_scrape.sh
 echo "source $PWD/scraper_venv/bin/activate && python $PWD/main.py" > start_bot.sh
 
 read -p "Do you want to set the recommended cron jobs? (y/n) " answer

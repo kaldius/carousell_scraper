@@ -5,3 +5,7 @@ __pycache__
 config/token.txt
 playground
 crontab_scrape.sh
+scraper_venv
+cron_scrape.sh
+start_bot.sh
+*.log
