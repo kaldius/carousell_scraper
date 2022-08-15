@@ -76,6 +76,8 @@ Front end for the scraper.
 > e.g. "/add ipad mini" adds the search term "ipad mini" to the currently monitored list
 * `/switch`: Presents a list of buttons for the user to make a **selection** on which to make queries
 > e.g. after **selection** is set to "ipad mini", "/recent 2" will show the 2 most recently posted listings for "ipad mini"
+* `/remove`: Presents a list of buttons for the user choose which to remove
+> e.g. clicking "iphone" will remove it from the list of monitored searches
 
 
 ## Learning Points
@@ -118,7 +120,7 @@ Todo(bot side):
     - [x] notifications when new listings are added
     - [ ] set criteria (like < $10) for notifications
 - [ ] add error callback
-- [ ] add ability to delete searches
+- [x] add ability to delete searches
 - [ ] ctl+c raises an exception, still don't know how to prevent it. At least it doesn't affect use for now.
 
 Todo(scraper side):

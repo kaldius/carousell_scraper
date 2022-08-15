@@ -231,7 +231,7 @@ def switch(update: Update, context: CallbackContext):
         )
         return
     keyboard = [
-        [InlineKeyboardButton(x, callback_data=x)] for x in monitored_searches[user_id]
+        [InlineKeyboardButton(x, callback_data="<switch> " + str(x))] for x in monitored_searches[user_id]
     ]
     update.message.reply_text(
         "Please select one of the following searches: ",
@@ -246,11 +246,50 @@ def switch_button(update: Update, context: CallbackContext):
     # every query must be answered, even if empty
     query.answer()
 
+
+    # remove <switch> marker from data
+    selection = ' '.join(query.data.split()[1:])
+    
     # save the selection to the user_data
-    context.user_data["selection"] = query.data
+    context.user_data["selection"] = selection
 
-    query.edit_message_text(text=f"Selected option: {query.data}")
+    query.edit_message_text(text=f"Selected option: {selection}")
 
+
+# removes a search from monitored searches
+def remove(update: Update, context: CallbackContext):
+    user_id = update.effective_chat.id
+    if user_id not in monitored_searches:
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="No monitored searches found. Use /add to add one.",
+        )
+        return
+    keyboard = [
+        [InlineKeyboardButton(x, callback_data="<remove> " + str(x))] for x in monitored_searches[user_id]
+    ]
+    update.message.reply_text(
+        "Please select one of the following searches to remove: ",
+        reply_markup=InlineKeyboardMarkup(keyboard),
+    )
+
+
+# removes the selected search from the list of monitored searches
+def remove_button(update: Update, context: CallbackContext):
+    query = update.callback_query
+
+    # every query must be answered, even if empty
+    query.answer()
+
+
+    # remove <remove> marker from data
+    selection = ' '.join(query.data.split()[1:])
+
+    print(monitored_searches[update.effective_chat.id])
+    monitored_searches[update.effective_chat.id].remove(selection)
+    print(monitored_searches[update.effective_chat.id])
+
+    query.edit_message_text(text=f"Search removed: {selection}")
 
 # catch all
 def unknown(update: Update, context: CallbackContext):
@@ -331,7 +370,9 @@ def main():
     price_range_handler = CommandHandler("range", price_range)
     add_handler = CommandHandler("add", add)
     switch_handler = CommandHandler("switch", switch)
-    switch_button_hanlder = CallbackQueryHandler(switch_button)
+    switch_button_hanlder = CallbackQueryHandler(switch_button, pattern="^<switch>")
+    remove_handler = CommandHandler("remove", remove)
+    remove_button_hanlder = CallbackQueryHandler(remove_button, pattern="^<remove>")
     unknown_handler = MessageHandler(Filters.command, unknown)
 
     all_handlers = [
@@ -342,6 +383,8 @@ def main():
         add_handler,
         switch_handler,
         switch_button_hanlder,
+        remove_handler,
+        remove_button_hanlder,
         unknown_handler,
     ]
     for handler in all_handlers:
