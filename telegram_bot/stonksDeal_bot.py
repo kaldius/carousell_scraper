@@ -231,7 +231,8 @@ def switch(update: Update, context: CallbackContext):
         )
         return
     keyboard = [
-        [InlineKeyboardButton(x, callback_data="<switch> " + str(x))] for x in monitored_searches[user_id]
+        [InlineKeyboardButton(x, callback_data="<switch> " + str(x))]
+        for x in monitored_searches[user_id]
     ]
     update.message.reply_text(
         "Please select one of the following searches: ",
@@ -246,10 +247,9 @@ def switch_button(update: Update, context: CallbackContext):
     # every query must be answered, even if empty
     query.answer()
 
-
     # remove <switch> marker from data
-    selection = ' '.join(query.data.split()[1:])
-    
+    selection = " ".join(query.data.split()[1:])
+
     # save the selection to the user_data
     context.user_data["selection"] = selection
 
@@ -266,7 +266,8 @@ def remove(update: Update, context: CallbackContext):
         )
         return
     keyboard = [
-        [InlineKeyboardButton(x, callback_data="<remove> " + str(x))] for x in monitored_searches[user_id]
+        [InlineKeyboardButton(x, callback_data="<remove> " + str(x))]
+        for x in monitored_searches[user_id]
     ]
     update.message.reply_text(
         "Please select one of the following searches to remove: ",
@@ -281,15 +282,15 @@ def remove_button(update: Update, context: CallbackContext):
     # every query must be answered, even if empty
     query.answer()
 
-
     # remove <remove> marker from data
-    selection = ' '.join(query.data.split()[1:])
+    selection = " ".join(query.data.split()[1:])
 
-    print(monitored_searches[update.effective_chat.id])
     monitored_searches[update.effective_chat.id].remove(selection)
-    print(monitored_searches[update.effective_chat.id])
+    save_monitored_searches()
+    os.remove(ROOT_DIR + "/data/" + selection.replace(" ", "_") + ".csv")
 
     query.edit_message_text(text=f"Search removed: {selection}")
+
 
 # catch all
 def unknown(update: Update, context: CallbackContext):
@@ -320,7 +321,7 @@ def is_recent(row):
 
 
 # update all users on new listings
-def update_all_users(updater):
+def push_to_all_users(updater):
     for user_id in monitored_searches:
         for search in monitored_searches[user_id]:
             with open(
@@ -337,8 +338,8 @@ def update_all_users(updater):
                     )
 
 
-# run when update_user script is run by crontab
-def user_updater(updater):
+# run when push_to_users script is run by crontab
+def push_notification_checker(updater):
     listener = Listener(("localhost", 6000), authkey=b"password")
     running = True
     while running:
@@ -350,7 +351,7 @@ def user_updater(updater):
                 running = False
                 break
             else:
-                update_all_users(updater)
+                push_to_all_users(updater)
             conn.close()
         except Exception as e:
             print(e)
@@ -391,7 +392,7 @@ def main():
         dispatcher.add_handler(handler)
 
     updater.start_polling()
-    user_updater(updater)
+    push_notification_checker(updater)
     updater.idle()
 
 
