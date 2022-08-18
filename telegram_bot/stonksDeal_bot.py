@@ -1,3 +1,4 @@
+import json
 from telegram.ext import (
     Updater,
     CallbackContext,
@@ -17,14 +18,32 @@ import csv
 from scraper import scraper
 
 monitored_searches = {}
+# monitored searches format:
+# {
+#   <user_id1>: {
+#     "searches": {
+#       <search_term>: {
+#         "max_price": <max_price>,
+#         "min_price": <min_price>,
+#       },
+#     }
+#   }
+#   <user_id2>: {
+#     "searches": {
+#       <search_term>: {
+#         "max_price": <max_price>,
+#         "min_price": <min_price>,
+#       },
+#     }
+#   }
+# }
 
 
-load_path = os.path.join(ROOT_DIR, "data", "monitored_searches.csv")
+load_path = os.path.join(ROOT_DIR, "data", "monitored_searches.json")
 
 if os.path.exists(load_path):
-    with open(load_path, "r") as f:
-        reader = csv.reader(f)
-        monitored_searches = {int(row[0]): row[1:] for row in reader}
+    with open(load_path, "r", encoding="utf-8") as f:
+        monitored_searches = json.load(f)
         print(monitored_searches)
 else:
     print("No monitored searches file found, creating new one.")
@@ -186,9 +205,24 @@ def add(update: Update, context: CallbackContext):
         )
         return
     else:
-        new_search = " ".join(context.args)
+        if "$" in context.args[-1] and "$" in context.args[-2]:
+            # if the last two arguments are both prices, take them as a range of prices
+            new_search = " ".join(context.args[:-2])
+            a = int(context.args[-2][1:])
+            b = int(context.args[-1][1:])
+            max_price = max(a, b)
+            min_price = min(a, b)
+        elif "$" in context.args[-1]:
+            # if the last argument is a price, take it as the max_price
+            new_search = " ".join(context.args[:-1])
+            max_price = int(context.args[-1][1:])
+            min_price = None
+        else:
+            new_search = " ".join(context.args)
+            max_price = None
+            min_price = None
 
-        user_id = update.effective_user.id
+        user_id = str(update.effective_user.id)
 
         # search and return error message if no results found
         if not scraper.search(new_search):
@@ -200,22 +234,33 @@ def add(update: Update, context: CallbackContext):
 
         # valid results found, add to list of monitored searches
         if user_id in monitored_searches:
-            monitored_searches[user_id].append(new_search)
+            monitored_searches[user_id]["searches"][new_search] = {
+                "max_price": max_price,
+                "min_price": min_price,
+            }
         else:
-            monitored_searches[user_id] = [new_search]
+            monitored_searches[user_id] = {
+                "searches": {
+                    new_search: {"max_price": max_price, "min_price": min_price}
+                }
+            }
 
         context.user_data["selection"] = new_search
 
-        print(
-            "\nAdded new search '"
+        output_str = (
+            "Added new search term: '"
             + new_search
-            + "' to user_id: "
-            + str(update.effective_chat.id)
+            + "' (max price: $"
+            + str(max_price)
+            + "; min price: $"
+            + str(min_price)
+            + ")"
         )
+        print(output_str + "to user_id: " + str(update.effective_chat.id))
 
         context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text="Added search term: " + new_search,
+            text=output_str,
         )
 
         save_monitored_searches()
@@ -223,7 +268,7 @@ def add(update: Update, context: CallbackContext):
 
 # switch from one monitored search to another
 def switch(update: Update, context: CallbackContext):
-    user_id = update.effective_chat.id
+    user_id = str(update.effective_user.id)
     if user_id not in monitored_searches:
         context.bot.send_message(
             chat_id=update.effective_chat.id,
@@ -232,7 +277,7 @@ def switch(update: Update, context: CallbackContext):
         return
     keyboard = [
         [InlineKeyboardButton(x, callback_data="<switch> " + str(x))]
-        for x in monitored_searches[user_id]
+        for x in monitored_searches[user_id]["searches"]
     ]
     update.message.reply_text(
         "Please select one of the following searches: ",
@@ -258,7 +303,7 @@ def switch_button(update: Update, context: CallbackContext):
 
 # removes a search from monitored searches
 def remove(update: Update, context: CallbackContext):
-    user_id = update.effective_chat.id
+    user_id = str(update.effective_chat.id)
     if user_id not in monitored_searches:
         context.bot.send_message(
             chat_id=update.effective_chat.id,
@@ -267,7 +312,7 @@ def remove(update: Update, context: CallbackContext):
         return
     keyboard = [
         [InlineKeyboardButton(x, callback_data="<remove> " + str(x))]
-        for x in monitored_searches[user_id]
+        for x in monitored_searches[user_id]["searches"]
     ]
     update.message.reply_text(
         "Please select one of the following searches to remove: ",
@@ -285,7 +330,7 @@ def remove_button(update: Update, context: CallbackContext):
     # remove <remove> marker from data
     selection = " ".join(query.data.split()[1:])
 
-    monitored_searches[update.effective_chat.id].remove(selection)
+    monitored_searches[str(update.effective_chat.id)]["searches"].pop(selection, None)
     save_monitored_searches()
     os.remove(ROOT_DIR + "/data/" + selection.replace(" ", "_") + ".csv")
 
@@ -305,35 +350,55 @@ def save_monitored_searches():
     if not os.path.exists(os.path.join(ROOT_DIR, "data")):
         os.mkdir(os.path.join(ROOT_DIR, "data"))
 
-    save_path = os.path.join(ROOT_DIR, "data", "monitored_searches.csv")
+    save_path = os.path.join(ROOT_DIR, "data", "monitored_searches.json")
 
-    with open(save_path, "w") as f:
-        writer = csv.writer(f)
-        keys = monitored_searches.keys()
-        for key in keys:
-            writer.writerow([key] + monitored_searches[key])
+    with open(save_path, "w", encoding="utf-8") as f:
+        json.dump(monitored_searches, f, ensure_ascii=False, indent=4)
 
 
-# checks if age is recent (< 10 min)
-def is_recent(row):
+# checks if bot should send the update to the user
+def should_send_update(row, user_id, search_term):
     age = row["age"].split()
-    return "second" in age[1] or "minute" in age[1] and int(age[0]) < 10
+
+    # checks if the listing is new (< 10min old)
+    is_recent = "second" in age[1] or "minute" in age[1] and int(age[0]) < 10
+
+    # checks if the listing is within the price range
+    max_price = monitored_searches[user_id]["searches"][search_term]["max_price"]
+    max_price = float("inf") if max_price is None else max_price
+    min_price = monitored_searches[user_id]["searches"][search_term]["min_price"]
+    min_price = 0 if min_price is None else min_price
+
+    is_within_price_range = min_price <= int(row["price"]) <= max_price
+
+    # print(
+    #    row["title"]
+    #    + " is "
+    #    + ("new" if is_recent else "old")
+    #    + " and "
+    #    + ("within" if is_within_price_range else "not within")
+    # )
+
+    return is_recent and is_within_price_range
 
 
 # update all users on new listings
 def push_to_all_users(updater):
     for user_id in monitored_searches:
-        for search in monitored_searches[user_id]:
+        for search in monitored_searches[user_id]["searches"]:
             with open(
                 ROOT_DIR + "/data/" + search.replace(" ", "_") + ".csv", "r"
             ) as f:
                 df = pd.read_csv(f)
-                m = df.apply(is_recent, axis=1)
-                recent_listings = df[m]
-                for i in range(len(recent_listings)):
+                m = df.apply(
+                    lambda row: should_send_update(row, str(user_id), search), axis=1
+                )
+                listings_worth_seeing = df[m]
+                print("listings_worth_seeing: ", listings_worth_seeing)
+                for i in range(len(listings_worth_seeing)):
                     updater.bot.send_message(
                         chat_id=user_id,
-                        text=format_message(recent_listings.iloc[i]),
+                        text=format_message(listings_worth_seeing.iloc[i]),
                         parse_mode="Markdown",
                     )
 

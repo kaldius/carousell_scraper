@@ -1,5 +1,5 @@
 # Carousell Scraper
-A web scraper for [Carousell](https://www.carousell.sg) which uses [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/) for scraping and [python-telegram-bot](https://github.com/python-telegram-bot/python-telegram-bot) for front-end user interaction.
+A web scraper for [Carousell](https://www.carousell.sg) which uses [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/) for scraping and [python-telegram-bot](https://github.com/python-telegram-bot/python-telegram-bot) for front-end user interaction. This package will automatically scrape for the user's saved search terms every 10 min, updating the user if there are any recent listings.
 
 ## Automated Installation (recommended)
 Run the `install.sh` script, providing your telegram bot token when prompted. Everything will be set up upon reboot.
@@ -66,17 +66,21 @@ Front end for the scraper.
 
 **Available commands**:
 * `/start`: Just replies with "I'm a bot, please talk to me!" for now.
-* `/recent`: Displays the most recently posted listing in the latest scrape. Optional: specify number of listings to show
+* `/recent`: Displays the most recently posted listing in the latest scrape. Optional: specify number of listings to show.
 > e.g. "/recent 5" shows the 5 most recently posted listings
-* `/cheapest`: Displays the cheapest listing in the latest scrape. Optional: specify number of listings to show
+* `/cheapest`: Displays the cheapest listing in the latest scrape. Optional: specify number of listings to show.
 > e.g. "/cheapest 5" shows the 5 cheapest listings
-* `/range`: Displays all listings with price in the given range. Compulsary: two integers for max and min respectively
+* `/range`: Displays all listings with price in the given range. Compulsary: two integers for max and min respectively.
 > e.g. "/range 20 30" shows all listings with price between S$20 to S$30
-* `/add`: Adds a search term to the currently monitored searches and calls for the scraper to do an initial scrape. This automatically sets the new search term to be the user's latest **selection**
+* `/add`: Adds a search term to the currently monitored searches and calls for the scraper to do an initial scrape. This automatically sets the new search term to be the user's latest **selection**. Additionally, a `max_price` and `min_price` can be set for regular updates (see examples below).
 > e.g. "/add ipad mini" adds the search term "ipad mini" to the currently monitored list
-* `/switch`: Presents a list of buttons for the user to make a **selection** on which to make queries
+
+> e.g. "/add ipad pro $1000" adds the search term and push notifications will only be sent if there is a recent listing with price **less than** $1000
+
+> e.g. "/add iphone $1000 $1100" adds the search term and push notifications will only be sent if there is a recent listing with price **more than** $1000 and **less than** $1100
+* `/switch`: Presents a list of buttons for the user to make a **selection** on which to make queries.
 > e.g. after **selection** is set to "ipad mini", "/recent 2" will show the 2 most recently posted listings for "ipad mini"
-* `/remove`: Presents a list of buttons for the user choose which to remove
+* `/remove`: Presents a list of buttons for the user choose which to remove.
 > e.g. clicking "iphone" will remove it from the list of monitored searches
 
 
@@ -118,7 +122,7 @@ Todo(bot side):
 - [ ] Check for diffs at each new scrape and automatically push them to user
     - [ ] add command to subscribe/unsubscribe to this per search
     - [x] notifications when new listings are added
-    - [ ] set criteria (like < $10) for notifications
+    - [x] set criteria (like < $10) for notifications
 - [ ] add error callback
 - [x] add ability to delete searches
 - [ ] ctl+c raises an exception, still don't know how to prevent it. At least it doesn't affect use for now.
