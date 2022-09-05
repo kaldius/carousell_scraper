@@ -12,8 +12,12 @@ if [ "$answer" == "y" ]; then
     echo "Data deleted."
 fi
 
-rm -r scraper_venv
-echo "Python virtual environment deleted."
+read -p "Delete python virtual environment?" answer
+if [ "$answer" == "y" ]; then
+    rm -r scraper_venv
+    echo "Python virtual environment deleted."
+fi
+
 rm cron_scrape.sh
 rm start_bot.sh
 echo "Cron scripts deleted."

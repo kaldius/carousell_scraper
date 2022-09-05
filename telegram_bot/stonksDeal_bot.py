@@ -360,8 +360,8 @@ def save_monitored_searches():
 def should_send_update(row, user_id, search_term):
     age = row["age"].split()
 
-    # checks if the listing is new (< 10min old)
-    is_recent = "second" in age[1] or "minute" in age[1] and int(age[0]) < 10
+    # checks if the listing is new (< 1min old)
+    is_recent = "second" in age[1]
 
     # checks if the listing is within the price range
     max_price = monitored_searches[user_id]["searches"][search_term]["max_price"]
