@@ -72,8 +72,8 @@ Front end for the scraper.
 > e.g. "/cheapest 5" shows the 5 cheapest listings
 * `/range`: Displays all listings with price in the given range. Compulsary: two integers for max and min respectively.
 > e.g. "/range 20 30" shows all listings with price between S$20 to S$30
-* `/add`: Adds a search term to the currently monitored searches and calls for the scraper to do an initial scrape. This automatically sets the new search term to be the user's latest **selection**. Additionally, a `max_price` and `min_price` can be set for regular updates (see examples below).
-> e.g. "/add ipad mini" adds the search term "ipad mini" to the currently monitored list
+* `/add`: Adds a search term to the currently monitored searches and calls for the scraper to do an initial scrape. This automatically sets the new search term to be the user's latest **selection**. Additionally, a `max_price` and `min_price` can be set for regular updates (see examples below). Comments can also be prepended using square brackets "[]".
+> e.g. "/add [My goal price is $500] ipad mini" adds the search term "ipad mini" to the currently monitored list
 
 > e.g. "/add ipad pro $1000" adds the search term and push notifications will only be sent if there is a recent listing with price **less than** $1000
 
@@ -111,7 +111,7 @@ Front end for the scraper.
 
 
 Todo(bot side):
-- [ ] Beautify format of output (currently so ugly its unusable) [consider cards with images? and maybe show only a few(3) and allow user to click to show more]
+- [x] Beautify format of output (currently so ugly its unusable) [consider cards with images? and maybe show only a few(3) and allow user to click to show more]
     - [x] make it not ugly
     - [ ] Images?
     - [ ] how to not spam user with all 5
@@ -126,6 +126,10 @@ Todo(bot side):
 - [ ] add error callback
 - [x] add ability to delete searches
 - [ ] ctl+c raises an exception, still don't know how to prevent it. At least it doesn't affect use for now.
+- [ ] password protection for `/start` command, so only users with password at `/start` can continue to use the bot
+- [ ] put scripts into directories, things are getting too messy
+- [ ] allow user to specify keywords to exclude from search (search: "iphone"; exclude: "mini" will not show "iphone mini"s)
+- [ ] allow user to block users' searches (annoying mobile phone shops)
 
 Todo(scraper side):
 - [x] maintain list of tracked search terms
