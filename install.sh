@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
 
-# save token
-read -p "Please key in your telegram bot token: " token
-echo "$token" > ./config/token.txt
+# check for token file, create new one if it does not exist
+TOKEN_FILE=./config/token.txt
+if [[ -f "$TOKEN_FILE" ]]; then
+    echo "Existing token file will be used."
+else
+    read -p "Please key in your telegram bot token: " token
+    echo "$token" > ./config/token.txt
+fi
 
 # install python dependencies
 echo "Creating python virtual environment and installing dependencies..."

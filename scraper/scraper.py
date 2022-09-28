@@ -159,7 +159,7 @@ def age_series_str_to_hours(age_series):
 
 
 def search(query: str):
-    if str[0] == "[":
+    if query[0] == "[":
         query = query.split("]")[1].strip()
     item_list = get_items(query)
     if len(item_list) == 0:
