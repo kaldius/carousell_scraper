@@ -55,7 +55,7 @@ def get_seller_url(item):
 def get_items(query: str, skip_bumps=True):
     page_count = 1
     item_list = []
-    extension = "/search/" + query.replace(" ", "%20")
+    extension = "/search_term/" + query.replace(" ", "%20")
 
     while extension != None:
         item_count = 0

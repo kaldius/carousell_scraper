@@ -13,30 +13,31 @@ import pandas as pd
 import os
 from config.definitions import ROOT_DIR, CAROUSELL_URL, TOKEN_DIR
 from multiprocessing.connection import Listener
-import csv
 
 from scraper import scraper
 
 monitored_searches = {}
-# monitored searches format:
-# {
-#   <user_id1>: {
-#     "searches": {
-#       <search_term>: {
-#         "max_price": <max_price>,
-#         "min_price": <min_price>,
-#       },
-#     }
-#   }
-#   <user_id2>: {
-#     "searches": {
-#       <search_term>: {
-#         "max_price": <max_price>,
-#         "min_price": <min_price>,
-#       },
-#     }
-#   }
-# }
+"""
+monitored searches format:
+{
+  <user_id1>: {
+    "searches": {
+      <search_term>: {
+        "max_price": <max_price>,
+        "min_price": <min_price>,
+      },
+    }
+  }
+  <user_id2>: {
+    "searches": {
+      <search_term>: {
+        "max_price": <max_price>,
+        "min_price": <min_price>,
+      },
+    }
+  }
+}
+"""
 
 
 load_path = os.path.join(ROOT_DIR, "data", "monitored_searches.json")
@@ -426,7 +427,7 @@ def push_notification_checker(updater):
 
 def main():
     with open(TOKEN_DIR, "r") as f:
-        TOKEN = f.readline().strip()
+        TOKEN = int(f.readline().strip())
     updater = Updater(token=TOKEN)
     dispatcher = updater.dispatcher
 
