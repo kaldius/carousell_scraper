@@ -52,7 +52,7 @@ def get_seller_url(item):
     return item.find(href=re.compile("/u/")).get("href")
 
 
-def get_items(query: str, skip_bumps=True):
+def get_items(query: str, exclude: str, skip_bumps=True):
     page_count = 1
     item_list = []
     extension = "/search_term/" + query.replace(" ", "%20")
@@ -78,12 +78,17 @@ def get_items(query: str, skip_bumps=True):
                 # skip this item
                 continue
 
-            item_attributes["age"] = get_age(item)
             (
                 item_attributes["listing_url"],
                 item_attributes["title"],
                 item_attributes["price"],
             ) = get_url_title_price(item)
+
+            if exclude and exclude in item_attributes["title"]:
+                # skip this item
+                continue
+
+            item_attributes["age"] = get_age(item)
             item_attributes["seller_url"] = get_seller_url(item)
 
             # append the item to the list
@@ -158,10 +163,10 @@ def age_series_str_to_hours(age_series):
     return output
 
 
-def search(query: str):
+def search(query: str, exclude: str):
     if query[0] == "[":
         query = query.split("]")[1].strip()
-    item_list = get_items(query)
+    item_list = get_items(query, exclude)
     if len(item_list) == 0:
         return False
     process_and_save(item_list, query)

@@ -72,12 +72,17 @@ Front end for the scraper.
 > e.g. "/cheapest 5" shows the 5 cheapest listings
 * `/range`: Displays all listings with price in the given range. Compulsary: two integers for max and min respectively.
 > e.g. "/range 20 30" shows all listings with price between S$20 to S$30
-* `/add`: Adds a search term to the currently monitored searches and calls for the scraper to do an initial scrape. This automatically sets the new search term to be the user's latest **selection**. Additionally, a `max_price` and `min_price` can be set for regular updates (see examples below). Comments can also be prepended using square brackets "[]".
+* `/add`: Adds a search term to the currently monitored searches and calls for the scraper to do an initial scrape. This automatically sets the new search term to be the user's latest **selection**. Additional arguments:
+    * A `max_price` and `min_price` can be set for regular updates (see examples below)
+    * Comments can also be prepended using square brackets "[]".
+    * Terms to exclude can be added at any part of the search term using "\".
 > e.g. "/add [My goal price is $500] ipad mini" adds the search term "ipad mini" to the currently monitored list
 
 > e.g. "/add ipad pro $1000" adds the search term and push notifications will only be sent if there is a recent listing with price **less than** $1000
 
 > e.g. "/add iphone $1000 $1100" adds the search term and push notifications will only be sent if there is a recent listing with price **more than** $1000 and **less than** $1100
+
+> e.g. "/add iphone 13 \mini" adds the search term "iphone 13", but all results including the word "mini" will be discarded
 * `/switch`: Presents a list of buttons for the user to make a **selection** on which to make queries.
 > e.g. after **selection** is set to "ipad mini", "/recent 2" will show the 2 most recently posted listings for "ipad mini"
 * `/remove`: Presents a list of buttons for the user choose which to remove.
@@ -128,8 +133,9 @@ Todo(bot side):
 - [ ] ctl+c raises an exception, still don't know how to prevent it. At least it doesn't affect use for now.
 - [ ] password protection for `/start` command, so only users with password at `/start` can continue to use the bot
 - [ ] put scripts into directories, things are getting too messy
-- [ ] allow user to specify keywords to exclude from search (search: "iphone"; exclude: "mini" will not show "iphone mini"s)
+- [x] allow user to specify keywords to exclude from search (search: "iphone"; exclude: "mini" will not show "iphone mini"s)
 - [ ] allow user to block users' searches (annoying mobile phone shops)
+- [ ] make better documentation (maybe a table of commands)
 
 Todo(scraper side):
 - [x] maintain list of tracked search terms

@@ -208,25 +208,32 @@ def add(update: Update, context: CallbackContext):
     else:
         if "$" in context.args[-1] and "$" in context.args[-2]:
             # if the last two arguments are both prices, take them as a range of prices
-            new_search = " ".join(context.args[:-2])
+            context_args = context.args[:-2]
             a = int(context.args[-2][1:])
             b = int(context.args[-1][1:])
             max_price = max(a, b)
             min_price = min(a, b)
         elif "$" in context.args[-1]:
             # if the last argument is a price, take it as the max_price
-            new_search = " ".join(context.args[:-1])
+            context_args = context.args[:-1]
             max_price = int(context.args[-1][1:])
             min_price = None
         else:
-            new_search = " ".join(context.args)
+            context_args = context.args)
             max_price = None
             min_price = None
+        
+        for s in context_args:
+            if "\\" in s:
+                exclude = s[1:]
+                new_search = context_args.replace("\\" + exclude, "")
+                break
+        new_search = " ".join(context_args)
 
         user_id = str(update.effective_user.id)
 
         # search and return error message if no results found
-        if not scraper.search(new_search):
+        if not scraper.search(new_search, exclude):
             context.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text="Sorry, I couldn't find any listings for " + new_search,
