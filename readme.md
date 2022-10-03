@@ -75,7 +75,7 @@ Front end for the scraper.
 * `/add`: Adds a search term to the currently monitored searches and calls for the scraper to do an initial scrape. This automatically sets the new search term to be the user's latest **selection**. Additional arguments:
     * A `max_price` and `min_price` can be set for regular updates (see examples below)
     * Comments can also be prepended using square brackets "[]".
-    * Terms to exclude can be added at any part of the search term using "\".
+    * Terms to exclude can be added at any part of the search term before the max/min prices using "\".
 > e.g. "/add [My goal price is $500] ipad mini" adds the search term "ipad mini" to the currently monitored list
 
 > e.g. "/add ipad pro $1000" adds the search term and push notifications will only be sent if there is a recent listing with price **less than** $1000
