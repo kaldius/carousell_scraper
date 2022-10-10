@@ -25,7 +25,7 @@ monitored searches format:
       <search_term>: {
         "max_price": <max_price>,
         "min_price": <min_price>,
-        "exclude" : <exclude>,
+        "exclude" : <exclude_array>,
       },
     }
   }
@@ -34,7 +34,7 @@ monitored searches format:
       <search_term>: {
         "max_price": <max_price>,
         "min_price": <min_price>,
-        "exclude" : <exclude>,
+        "exclude" : <exclude_array>,
       },
     }
   }
@@ -208,6 +208,12 @@ def add(update: Update, context: CallbackContext):
         )
         return
     else:
+        # check for comments
+        # if context.args[0][0] == "[":
+        #     comment = context.args[0][1:-1]
+        #     context.args = context.args[1].strip()
+
+        # check for min and max prices
         if "$" in context.args[-1] and "$" in context.args[-2]:
             # if the last two arguments are both prices, take them as a range of prices
             context_args = context.args[:-2]
@@ -225,11 +231,13 @@ def add(update: Update, context: CallbackContext):
             max_price = None
             min_price = None
 
+        # check for exclude keywords
+        exclude = []
         for s in context_args:
             if "\\" in s:
-                exclude = s[1:]
-                new_search = context_args.remove("\\" + exclude)
-                break
+                exclude.append(s[1:])
+        for word in exclude:
+            context_args.remove("\\" + word)
         new_search = " ".join(context_args)
 
         user_id = str(update.effective_user.id)
@@ -271,6 +279,9 @@ def add(update: Update, context: CallbackContext):
             + str(min_price)
             + ")"
         )
+        if len(exclude) > 0:
+            output_str += " (excluding: " + ", ".join(exclude) + ") "
+
         print(output_str + "to user_id: " + str(update.effective_chat.id))
 
         context.bot.send_message(

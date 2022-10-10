@@ -21,13 +21,18 @@ def is_bumped(item):
     )
 
 
-def is_slashed(item):
-    return (
-        item.find(
-            attrs={"data-testid": "listing-card-text-seller-name"}
-        ).next_sibling.find("svg")
-        != None
-    )
+# OLD CODE takes item and checks for a crossed out price
+# def is_slashed(item):
+#     return (
+#         item.find(
+#             attrs={"data-testid": "listing-card-text-seller-name"}
+#         ).next_sibling.find("svg")
+#         != None
+#     )
+
+# NEW CODE takes entire item_attributes dict and checks for U.P in price
+def is_slashed(item_attributes):
+    return "U.P." in item_attributes["price"]
 
 
 def get_age(item):
@@ -41,18 +46,21 @@ def get_url_title_price(item):
     listing_url_tag = item.find(
         href=re.compile("/p/")
     )  # will be using relative positions from this tag to find other data
-    return (
-        listing_url_tag.get("href"),
-        listing_url_tag.next_element.next_sibling.text,
-        listing_url_tag.next_element.next_sibling.next_sibling.find("p").text,
-    )
+
+    url = listing_url_tag.get("href")
+    title = listing_url_tag.next_element.next_sibling.text
+    price = listing_url_tag.next_element.next_sibling.next_sibling.find("p").text
+    if "U.P." in price:
+        price = price.split("(")[0].strip()
+
+    return (url, title, price)
 
 
 def get_seller_url(item):
     return item.find(href=re.compile("/u/")).get("href")
 
 
-def get_items(query: str, exclude: str, skip_bumps=True):
+def get_items(query: str, exclude, skip_bumps=True):
     page_count = 1
     item_list = []
     extension = "/search/" + query.replace(" ", "%20")
@@ -74,18 +82,21 @@ def get_items(query: str, exclude: str, skip_bumps=True):
             # Retrieve data from website using HTML tags
             # POSSIBLE IMPROVEMENT: add filters here to stop scraping item once it fails
 
-            if skip_bumps and is_bumped(item) and not is_slashed(item):
-                # skip this item
-                continue
-
             (
                 item_attributes["listing_url"],
                 item_attributes["title"],
                 item_attributes["price"],
             ) = get_url_title_price(item)
 
-            if exclude and exclude in item_attributes["title"]:
+            if skip_bumps and is_bumped(item) and not is_slashed(item_attributes):
                 # skip this item
+                continue
+
+            skip_item = False
+            for word in exclude:
+                if word.lower() in item_attributes["title"].lower():
+                    skip_item = True
+            if skip_item:
                 continue
 
             item_attributes["age"] = get_age(item)
@@ -106,7 +117,6 @@ def get_items(query: str, exclude: str, skip_bumps=True):
             extension = extension.select("a")[0].get("href")
 
         page_count += 1
-        # time.sleep(5)
 
     return item_list
 
@@ -163,11 +173,13 @@ def age_series_str_to_hours(age_series):
     return output
 
 
-def search(query: str, exclude: str):
+def search(query: str, exclude):
+    comment = ""
     if query[0] == "[":
+        comment = query[: query.find("]") + 2]
         query = query.split("]")[1].strip()
     item_list = get_items(query, exclude)
     if len(item_list) == 0:
         return False
-    process_and_save(item_list, query)
+    process_and_save(item_list, comment + query)
     return True

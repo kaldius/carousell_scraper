@@ -136,6 +136,7 @@ Todo(bot side):
 - [x] allow user to specify keywords to exclude from search (search: "iphone"; exclude: "mini" will not show "iphone mini"s)
 - [ ] allow user to block users' searches (annoying mobile phone shops)
 - [ ] make better documentation (maybe a table of commands)
+- [ ] comments should not be saved in the name, should be saved in a new field in dict
 
 Todo(scraper side):
 - [x] maintain list of tracked search terms
@@ -143,3 +144,4 @@ Todo(scraper side):
 - [x] diffs between scrapes
     - [x] how to see diffs? since the age of the item changes with each scrape. Look for items with age < scraping interval?
 - [ ] store user bookmarks or already viewed listings
+- [x] prices now have a U.P????? [e.g. S$40 (U.P S$50)]
