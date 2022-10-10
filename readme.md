@@ -145,3 +145,4 @@ Todo(scraper side):
     - [x] how to see diffs? since the age of the item changes with each scrape. Look for items with age < scraping interval?
 - [ ] store user bookmarks or already viewed listings
 - [x] prices now have a U.P????? [e.g. S$40 (U.P S$50)]
+    - [ ] fixed price before checking if slashed. the `is_slashed` check is redundant
