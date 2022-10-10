@@ -4,12 +4,14 @@ from scraper import scraper
 import os
 import json
 
+
 def extract_all_search_terms(monitored_searches):
     search_terms = []
     for user_id in monitored_searches:
         for search_term in monitored_searches[user_id]["searches"]:
             search_terms.append(search_term)
     return search_terms
+
 
 if __name__ == "__main__":
     load_path = os.path.join(ROOT_DIR, "data", "monitored_searches.json")
@@ -20,4 +22,4 @@ if __name__ == "__main__":
             all_search_terms = extract_all_search_terms(monitored_searches)
             for item in all_search_terms:
                 print("\nScraping for: " + item)
-                scraper.search(item)
+                scraper.search(item, all_search_terms[item]["exclude"])
