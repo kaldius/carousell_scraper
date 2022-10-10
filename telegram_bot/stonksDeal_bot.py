@@ -219,14 +219,14 @@ def add(update: Update, context: CallbackContext):
             max_price = int(context.args[-1][1:])
             min_price = None
         else:
-            context_args = context.args)
+            context_args = context.args
             max_price = None
             min_price = None
         
         for s in context_args:
             if "\\" in s:
                 exclude = s[1:]
-                new_search = context_args.replace("\\" + exclude, "")
+                new_search = context_args.remove("\\" + exclude)
                 break
         new_search = " ".join(context_args)
 
@@ -245,11 +245,16 @@ def add(update: Update, context: CallbackContext):
             monitored_searches[user_id]["searches"][new_search] = {
                 "max_price": max_price,
                 "min_price": min_price,
+                "exclude": exclude
             }
         else:
             monitored_searches[user_id] = {
                 "searches": {
-                    new_search: {"max_price": max_price, "min_price": min_price}
+                    new_search: {
+                        "max_price": max_price,
+                        "min_price": min_price,
+                        "exclude": exclude
+                    }
                 }
             }
 
@@ -434,7 +439,7 @@ def push_notification_checker(updater):
 
 def main():
     with open(TOKEN_DIR, "r") as f:
-        TOKEN = int(f.readline().strip())
+        TOKEN = f.readline().strip()
     updater = Updater(token=TOKEN)
     dispatcher = updater.dispatcher
 
