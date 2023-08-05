@@ -4,6 +4,21 @@ A web scraper for [Carousell](https://www.carousell.sg) which uses [BeautifulSou
 ## Automated Installation (recommended)
 Run the `install.sh` script, providing your telegram bot token when prompted. Everything will be set up upon reboot.
 
+NOTE: for raspberrypi, the first time you run, there might be an error that looks like the following:
+```
+libf77blas.so.3: cannot open shared object file: No such file or directory
+```
+The solution is either:
+```
+sudo apt-get install libatlas-base-dev
+```
+to install the missing libraries expected by the self-compiled NumPy or:
+```
+pip3 uninstall numpy  # remove previously installed version
+apt install python3-numpy
+```
+to use the NumPy provided by Raspbian.
+
 ## Manual Installation
 1. Create a `token.txt` file in the `config` directory of this package and paste your token in the file **without** any whitespaces/newlines.
 2. Install python dependencies.
