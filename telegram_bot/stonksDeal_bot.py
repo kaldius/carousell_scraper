@@ -14,8 +14,6 @@ import os
 from config.definitions import ROOT_DIR, CAROUSELL_URL, TOKEN_DIR
 from multiprocessing.connection import Listener
 
-from scraper import scraper
-
 monitored_searches = {}
 """
 monitored searches format:
@@ -243,12 +241,13 @@ def add(update: Update, context: CallbackContext):
         user_id = str(update.effective_user.id)
 
         # search and return error message if no results found
-        if not scraper.search(new_search, exclude):
-            context.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text="Sorry, I couldn't find any listings for " + new_search,
-            )
-            return
+        # TODO: FIX THIS
+        # if not scraper.search(new_search, exclude):
+        #     context.bot.send_message(
+        #         chat_id=update.effective_chat.id,
+        #         text="Sorry, I couldn't find any listings for " + new_search,
+        #     )
+        #     return
 
         # valid results found, add to list of monitored searches
         if user_id in monitored_searches:
