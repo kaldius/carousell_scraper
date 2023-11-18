@@ -1,6 +1,5 @@
-import csv
 from config.definitions import ROOT_DIR
-from scraper import scraper
+from scraper.carousellScraper import CarousellScraper
 import os
 import json
 
@@ -26,6 +25,10 @@ if __name__ == "__main__":
             monitored_searches = json.load(f)
             print(monitored_searches)
             all_search_terms = extract_all_search_items(monitored_searches)
-            for search_term, exclude in all_search_terms:
-                print("\nScraping for: " + search_term)
-                scraper.search(search_term, exclude)
+
+            # TODO: deal with exclude terms
+            # all_search_terms is an array of pairs: (search_term, exclude)
+
+            search_terms = [pair[0] for pair in all_search_terms]
+            scraper = CarousellScraper(search_terms=search_terms)
+            scraper.start()
