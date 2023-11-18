@@ -11,6 +11,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 import logging
 import pandas as pd
 import os
+import math
 from config.definitions import ROOT_DIR, CAROUSELL_URL, TOKEN_DIR
 from multiprocessing.connection import Listener
 
@@ -383,6 +384,8 @@ def save_monitored_searches():
 
 # checks if bot should send the update to the user
 def should_send_update(row, user_id, search_term):
+    if 'age' not in row:
+        return False
     age = row["age"].split()
 
     # checks if the listing is new (< 1min old)
@@ -394,7 +397,10 @@ def should_send_update(row, user_id, search_term):
     min_price = monitored_searches[user_id]["searches"][search_term]["min_price"]
     min_price = 0 if min_price is None else min_price
 
-    is_within_price_range = min_price <= int(row["price"]) <= max_price
+    price = row['price']
+    if math.isnan(price):
+        return False
+    is_within_price_range = min_price <= int(price) <= max_price
 
     # print(
     #    row["title"]
