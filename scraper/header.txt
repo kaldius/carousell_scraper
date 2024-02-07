@@ -1,0 +1,20 @@
+fetch("https://www.carousell.sg/search/hydroflask?addRecent=true&canChangeKeyword=true&includeSuggestions=true&searchId=35GMMU&t-search_query_source=direct_search", {
+  "headers": {
+    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+    "accept-language": "en-US,en;q=0.9",
+    "cache-control": "max-age=0",
+    "sec-ch-ua": "\"Chromium\";v=\"119\", \"Not?A_Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"macOS\"",
+    "sec-fetch-dest": "document",
+    "sec-fetch-mode": "navigate",
+    "sec-fetch-site": "same-origin",
+    "sec-fetch-user": "?1",
+    "upgrade-insecure-requests": "1",
+    "cookie": "_t2=l1c-OzDcKq; _t=a%3DGZ0R_N8vVG%26t%3D1699601744213; latra=1700179200000; g_state={\"i_p\":1700286901620,\"i_l\":2}; _csrf=KdRIhgKOZpEcj1lp7_2UFZ-e; siv_2=7f36924f-3b23-4ca5-bc19-b8291b3fe519",
+    "Referer": "https://www.carousell.sg/search/ipad%20mini%206?addRecent=true&canChangeKeyword=true&includeSuggestions=true&t-search_query_source=direct_search",
+    "Referrer-Policy": "strict-origin-when-cross-origin"
+  },
+  "body": null,
+  "method": "GET"
+});
